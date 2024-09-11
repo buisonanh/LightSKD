@@ -72,7 +72,7 @@ def download_pretrained_weights():
 
 if args.pretrained:
     download_pretrained_weights()
-    pretrained_weights_path = "pretrained/resnet50_scratch_weight.pkl"
+    pretrained_weights_path = "./pretrained/resnet50_scratch_weight.pkl"
     print(f"Loading pretrained weights from {pretrained_weights_path}")
 
     # Load the state dict using pickle
