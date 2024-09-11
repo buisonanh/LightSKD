@@ -12,6 +12,11 @@ from backbone.resnet import *
 import torchvision.transforms as transforms, torchvision.datasets as datasets
 from torchvision.datasets import ImageFolder,CIFAR100,ImageNet,CIFAR10
 from torch.utils.data import DataLoader, BatchSampler, SequentialSampler, Sampler, Dataset,Subset
+import os
+import gdown
+import zipfile
+
+
 # from cutout import Cutout
 def get_transforms(isDense):
     if isDense:
@@ -22,7 +27,7 @@ def get_transforms(isDense):
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261))
         ])
         transform_test = transforms.Compose([
-           transforms.Resize(256),
+            transforms.Resize(256),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261))
@@ -30,18 +35,18 @@ def get_transforms(isDense):
         return transform_train,transform_test
     else:
         transform_train = transforms.Compose([
-           #transforms.RandomCrop(32,padding=4,fill=128),
-           transforms.RandomResizedCrop(32),
-           transforms.RandomHorizontalFlip(),
-           transforms.ToTensor(),
-           #Cutout(n_holes=1, length=16),
-           transforms.Normalize((0.4914,0.4822,0.4465),(0.247,0.243,0.261))
-           ])
+            #transforms.RandomCrop(32,padding=4,fill=128),
+            transforms.RandomResizedCrop(32),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            #Cutout(n_holes=1, length=16),
+            transforms.Normalize((0.4914,0.4822,0.4465),(0.247,0.243,0.261))
+            ])
         transform_test = transforms.Compose([
-           transforms.Resize(32),
-           transforms.ToTensor(),
-           transforms.Normalize((0.4914,0.4822,0.4465),(0.247,0.243,0.261))
-           ])
+            transforms.Resize(32),
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914,0.4822,0.4465),(0.247,0.243,0.261))
+            ])
         return transform_train,transform_test
 
 def get_val_transforms():
@@ -51,9 +56,52 @@ def get_val_transforms():
     return transform_val
 
 
+
+def get_fer_transforms():
+    target_size = 48
+    mean = 0
+    std = 255
+    transform_train = transforms.Compose([
+        transforms.RandomResizedCrop(target_size, scale=(0.8, 1.2)),
+        transforms.RandomApply([transforms.RandomAffine(0, translate=(0.2, 0.2))], p=0.5),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomApply([transforms.RandomRotation(10)], p=0.5),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=mean, std=std)
+    ])
+    transform_val = transforms.Compose([
+        transforms.Resize((target_size, target_size)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=mean, std=std)
+    ])
+    transform_test = transforms.Compose([
+        transforms.Resize((target_size, target_size)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=mean, std=std)
+    ])
+    return transform_train, transform_val, transform_test
+
+
+def download_fer2013():
+    # The Google Drive file ID of your dataset
+    drive_url = "https://drive.google.com/uc?id=1YBuZaO7morIG43trYi0qtdelYGukBNCj"
+    output = "./datasets/FER2013.zip"  # Path to save the downloaded file
+
+    # Download the dataset
+    if not os.path.exists(output):  # Download only if it hasn't been downloaded
+        gdown.download(drive_url, output, quiet=False)
+
+    # Unzip the dataset if not already unzipped
+    dataset_dir = "./datasets/FER2013/"
+    if not os.path.exists(dataset_dir):
+        with zipfile.ZipFile(output, 'r') as zip_ref:
+            zip_ref.extractall(dataset_dir)
+        print(f"Dataset extracted to {dataset_dir}")
+
+
 #set = ImageFolder(root="./datasets/stanforddogs/images",transform=get_transforms(isDense)[0])
 
-def get_trainloader(params='CIFAR10',isDense=False,bs=128):
+def get_trainloader(params='FER2013',isDense=False,bs=128):
     #if params not in  ["CUB200","standford_dogs","TinyImageNet","CIFAR100","CIFAR10"]:
     #    raise NameError('training on this datasets has not been implemented')
 
@@ -78,10 +126,13 @@ def get_trainloader(params='CIFAR10',isDense=False,bs=128):
         trainset = ImageFolder("./datasets/cal/train/images",transform=get_transforms(isDense)[0])
     elif params == "CUB":
         trainset = ImageFolder("./datasets/CUB/train",transform=get_transforms(isDense)[0])
+    elif params == "FER2013":
+        download_fer2013()
+        trainset = ImageFolder("./datasets/FER2013/org_fer2013/train",transform=get_fer_transforms()[0])
 
     return DataLoader(trainset,num_workers=4,batch_size=bs,shuffle=True,drop_last=True)
 
-def get_testloader(params='CIFAR10',isDense=False,bs=128):
+def get_testloader(params='FER2013',isDense=False,bs=128):
     # if params not in  ["CUB200","standford_dogs","TinyImageNet","CIFAR100","CIFAR10","cal"]:
     #     raise NameError('testing on this datasets has not been implemented')
 
@@ -106,12 +157,14 @@ def get_testloader(params='CIFAR10',isDense=False,bs=128):
         trainset = ImageFolder("./datasets/cal/val/images", transform=get_transforms(isDense)[1])
     elif params == "CUB":
         trainset = ImageFolder("./datasets/CUB/val/", transform=get_transforms(isDense)[1])
+    elif params == "FER2013":
+        trainset = ImageFolder("./datasets/FER2013/org_fer2013/test",transform=get_fer_transforms()[2])
 
 
     return DataLoader(trainset,num_workers=4,batch_size=bs,shuffle=True,drop_last=True)
 
 
-def get_valset(params='TinyImageNet', data_path='./datasets/'):
+def get_valset(params='FER2013', data_path='./datasets/'):
     if params == 'TinyImageNet':
         return ImageFolder(root=r"./datasets/TinyImageNet/val", transform=get_val_transforms())
     elif params == "standford_dogs":
@@ -126,6 +179,8 @@ def get_valset(params='TinyImageNet', data_path='./datasets/'):
     elif params == 'CUB':
         data = ImageFolder("./datasets/CUB/val",transform=get_val_transforms())
         return data
+    elif params == 'FER2013':
+        data = ImageFolder("./datasets/FER2013/org_fer2013/test",transform=get_fer_transforms()[1])
     else:
         raise NameError('validation on this datasets has not been implemented')
     return data(data_path, train=False, download=True, transform=get_val_transforms())
