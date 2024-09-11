@@ -63,7 +63,7 @@ if args.pretrained:
     
     # Load the state dict into the model
     net.load_state_dict(state_dict)
-    net.fc = nn.Linear(net.fc.in_features, 100)
+    net.fc = nn.Linear(net.fc.in_features, 7)
 
 else:
     net = get_model(args)
