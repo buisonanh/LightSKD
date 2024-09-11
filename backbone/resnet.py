@@ -176,7 +176,7 @@ def ResNet34(num_class=10):
     return ResNet(BasicBlock, [3,4,6,3], num_classes=num_class)
 
 
-def ResNet50(num_class=100, include_top=True):
+def ResNet50(num_class=7, include_top=True):
     return ResNet(Bottleneck, [3,4,6,3], num_classes=num_class, include_top=include_top)
 
 
