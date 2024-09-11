@@ -56,7 +56,7 @@ def download_pretrained_weights():
     drive_url = "https://drive.google.com/uc?id=1_ig22lgZCMpHdlP2B18RbIAhtGVI6yen"
     
     # Define the output file path where the model will be saved
-    output = "./pretrained/resnet50_pretrained_weights.pkl"
+    output = "./pretrained/resnet50_pretrained_weight.pkl"
     
     # Create the directory if it doesn't exist
     os.makedirs(os.path.dirname(output), exist_ok=True)
