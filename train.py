@@ -47,7 +47,31 @@ svloader = svl()
 
 device = torch.device("cuda:"+str(args.visible_device_single) if torch.cuda.is_available() else "cpu")
 
+
+import gdown
+import os
+
+def download_pretrained_weights():
+    # Google Drive file ID
+    drive_url = "https://drive.google.com/uc?id=1_ig22lgZCMpHdlP2B18RbIAhtGVI6yen"
+    
+    # Define the output file path where the model will be saved
+    output = "./pretrained/resnet50_pretrained_weights.pkl"
+    
+    # Create the directory if it doesn't exist
+    os.makedirs(os.path.dirname(output), exist_ok=True)
+
+    # Check if the file already exists to avoid redundant downloads
+    if not os.path.exists(output):
+        # Download the file from Google Drive
+        gdown.download(drive_url, output, quiet=False)
+        print(f"Pretrained weights downloaded to {output}")
+    else:
+        print(f"File already exists at {output}")
+
+
 if args.pretrained:
+    download_pretrained_weights()
     pretrained_weights_path = "pretrained/resnet50_scratch_weight.pkl"
     print(f"Loading pretrained weights from {pretrained_weights_path}")
 
