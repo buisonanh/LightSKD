@@ -22,7 +22,7 @@ parser.add_argument("--lr_drop_epoch", default=[60,120,160])
 parser.add_argument("--visible_device_single", default=0, type=int, help="if use_parallel=True, this item will not work.")
 parser.add_argument("--visible_device_list", default=[0], type=list, help="if use_parallel=False, this item will not work.")
 parser.add_argument("--use_parallel", default=False)
-parser.add_argument("--datasets", default='FER2013', type=str)
+parser.add_argument("--datasets", default='CIFAR10', type=str)
 parser.add_argument("--num_classes", default=7, type=int)
 parser.add_argument("--temperature", default=4.0, type=float)
 parser.add_argument("--batch_size", default=128, type=int)
@@ -87,7 +87,7 @@ if args.pretrained:
     
     # Load the state dict into the model
     net.load_state_dict(state_dict)
-    net.fc = nn.Linear(net.fc.in_features, 7)
+    net.fc = nn.Linear(net.fc.in_features, 10)
 
 else:
     net = get_model(args)
